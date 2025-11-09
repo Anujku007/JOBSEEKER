@@ -92,11 +92,14 @@ def create_app():
 
 
 # -------------------------------------------------------
-# Main Entry Point
+# ✅ Make app globally available for Gunicorn / Render
+# -------------------------------------------------------
+app = create_app()
+
+# -------------------------------------------------------
+# Main Entry Point (for local development)
 # -------------------------------------------------------
 if __name__ == "__main__":
-    app = create_app()
-
     with app.app_context():
         try:
             db.create_all()
