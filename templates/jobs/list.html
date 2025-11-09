@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+{% block title %}JOBSEEKER - Find Your Dream Job in India{% endblock %}
+{% block content %}
+
+<!-- Hero Search Section -->
+<section class="bg-gradient-to-br from-blue-50 to-indigo-100 py-12">
+  <div class="container mx-auto px-4">
+    <div class="text-center max-w-4xl mx-auto">
+      <h1 class="text-4xl font-bold text-gray-900 mb-4">
+        Find Your <span class="text-blue-600">Dream Job</span> in India 🇮🇳
+      </h1>
+      <p class="text-lg text-gray-600 mb-8">
+        Explore opportunities across top Indian companies and cities
+      </p>
+
+    <!-- Search Form -->
+<form
+  action="{{ url_for('jobs_bp.job_list') }}"
+  method="GET"
+  id="jobSearchForm"
+  class="bg-white rounded-2xl shadow-xl p-2 max-w-3xl mx-auto"
+>
+  <div class="flex flex-col sm:flex-row gap-2">
+    <!-- Keyword Input -->
+    <div class="flex-1 flex items-center space-x-3 px-4 py-3">
+      <i class="fas fa-search text-gray-400"></i>
+      <input
+        type="text"
+        name="q"
+        placeholder="Job title, keywords, or company"
+        class="flex-1 border-0 focus:ring-0 text-lg w-full"
+        value="{{ search_query or '' }}"
+      />
+    </div>
+
+    <!-- Location Dropdown -->
+    <div
+      class="flex-1 flex items-center space-x-3 px-4 py-3 border-t sm:border-t-0 sm:border-l border-gray-200"
+    >
+      <i class="fas fa-map-marker-alt text-gray-400"></i>
+      <select
+        name="location"
+        class="flex-1 border-0 focus:ring-0 text-lg w-full"
+      >
+        <option value="">All India</option>
+        {% for city in [
+          'New Delhi','Mumbai','Bengaluru','Hyderabad','Chennai','Pune',
+          'Kolkata','Noida','Gurugram','Jaipur','Ahmedabad','Lucknow'
+        ] %}
+        <option value="{{ city }}" {% if location == city %}selected{% endif %}>
+          {{ city }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Submit -->
+    <button
+      type="submit"
+      class="bg-blue-600 text-white px-8 py-4 rounded-xl hover:bg-blue-700 transition-colors font-semibold text-lg"
+    >
+      Search Jobs
+    </button>
+  </div>
+</form>
+
+<!-- Advanced Filters -->
+<section class="bg-white border-b border-gray-200 py-6">
+  <div class="container mx-auto px-4">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <h3 class="text-lg font-semibold text-gray-900">Refine Your Search</h3>
+        <div class="flex flex-wrap gap-4">
+          <form action="{{ url_for('jobs_bp.job_list') }}" method="GET" class="flex gap-4 items-center">
+            <!-- Preserve previous filters -->
+            <input type="hidden" name="q" value="{{ search_query }}">
+            <input type="hidden" name="location" value="{{ location }}">
+
+            <!-- Job Type Filter -->
+            <select name="type" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="this.form.submit()">
+              <option value="">All Job Types</option>
+              <option value="Full-time" {% if job_type == 'Full-time' %}selected{% endif %}>Full-time</option>
+              <option value="Part-time" {% if job_type == 'Part-time' %}selected{% endif %}>Part-time</option>
+              <option value="Contract" {% if job_type == 'Contract' %}selected{% endif %}>Contract</option>
+              <option value="Internship" {% if job_type == 'Internship' %}selected{% endif %}>Internship</option>
+            </select>
+
+            <!-- Salary Filter -->
+            <select name="salary_min" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="this.form.submit()">
+              <option value="">All Salaries</option>
+              <option value="4" {% if salary_min == '4' %}selected{% endif %}>₹4L+</option>
+              <option value="8" {% if salary_min == '8' %}selected{% endif %}>₹8L+</option>
+              <option value="12" {% if salary_min == '12' %}selected{% endif %}>₹12L+</option>
+              <option value="20" {% if salary_min == '20' %}selected{% endif %}>₹20L+</option>
+            </select>
+
+            {% if search_query or location or job_type or salary_min %}
+            <a href="{{ url_for('jobs_bp.job_list') }}" class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+              Clear Filters
+            </a>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Data Source Banner -->
+{% if using_api %}
+<div class="bg-green-50 border-l-4 border-green-500 text-green-800 px-6 py-3 text-center text-sm animate-fade-in">
+  <i class="fas fa-cloud mr-2"></i> Data source: <strong>Live API (India)</strong>
+</div>
+{% else %}
+<div class="bg-blue-50 border-l-4 border-blue-500 text-blue-800 px-6 py-3 text-center text-sm animate-fade-in">
+  <i class="fas fa-database mr-2"></i> Data source: <strong>Mock Data (Offline Mode)</strong>
+</div>
+{% endif %}
+
+<!-- Job Listings -->
+<section class="container mx-auto px-4 py-8">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="hidden text-center py-12">
+      <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+      <p class="text-gray-600">Fetching jobs...</p>
+    </div>
+
+    <!-- Job Grid -->
+    <div id="jobResults" class="fade-in">
+      {% if jobs %}
+      <div class="grid gap-6">
+        {% for job in jobs %}
+        <div
+          class="job-card bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-blue-500"
+        >
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-start justify-between mb-3">
+                <h3 class="text-xl font-semibold text-gray-900">
+                  <a
+                    href="{{ url_for('jobs_bp.job_detail', job_id=job.id) }}"
+                    class="hover:text-blue-600 transition-colors"
+                    >{{ job.title }}</a
+                  >
+                </h3>
+                <button
+                  class="save-job-btn text-gray-400 hover:text-red-500 transition-colors"
+                  title="Save Job"
+                  data-job-id="{{ job.id }}"
+                  data-saved="{{ 'true' if job.is_saved else 'false' }}"
+                >
+                  {% if job.is_saved %}
+                  <i class="fas fa-heart text-red-500"></i>
+                  {% else %}
+                  <i class="far fa-heart"></i>
+                  {% endif %}
+                </button>
+              </div>
+
+              <div class="flex items-center text-gray-600 mb-3">
+                <i class="fas fa-building text-gray-400 mr-2"></i>
+                <span class="font-medium mr-4">{{ job.company }}</span>
+                <i class="fas fa-map-marker-alt text-gray-400 mr-2"></i>
+                <span>{{ job.location }}</span>
+              </div>
+
+              <div class="flex flex-wrap gap-2 mb-4">
+                <span
+                  class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
+                  >{{ job.job_type }}</span
+                >
+                {% if job.remote %}
+                <span
+                  class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium"
+                  ><i class="fas fa-wifi mr-1"></i>Remote</span
+                >
+                {% endif %}
+                <span
+                  class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium"
+                  >{{ job.source }}</span
+                >
+                {% if job.salary %}
+                <span
+                  class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium"
+                  >{{ job.salary }}</span
+                >
+                {% endif %}
+              </div>
+
+              <p class="text-gray-700 line-clamp-2 mb-4">
+                {{ job.description }}
+              </p>
+
+              <div class="flex items-center text-sm text-gray-500">
+                <i class="fas fa-clock mr-2"></i>
+                <span>Posted {{ job.posted_date }}</span>
+              </div>
+            </div>
+
+            <div class="mt-4 lg:mt-0 lg:ml-6 lg:text-right">
+              <div class="space-y-3">
+                <div class="flex lg:flex-col gap-2">
+                  <a
+                    href="{{ url_for('jobs_bp.job_detail', job_id=job.id) }}"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold flex-1 lg:flex-none text-center"
+                    >View Details</a
+                  >
+
+                  <button
+                    class="apply-job-btn bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors"
+                    title="Quick Apply"
+                    data-job-id="{{ job.id }}"
+                    data-applied="{{ 'true' if job.is_applied else 'false' }}"
+                  >
+                    {% if job.is_applied %}
+                    <i class="fas fa-check"></i>
+                    {% else %}
+                    <i class="fas fa-paper-plane"></i>
+                    {% endif %}
+                  </button>
+                </div>
+                <div class="text-xs text-gray-500">
+                  <i class="fas fa-bolt mr-1"></i>Apply in one click
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-16 fade-in">
+        <div class="max-w-md mx-auto">
+          <i class="fas fa-search text-gray-300 text-6xl mb-6"></i>
+          <h3 class="text-2xl font-semibold text-gray-600 mb-4">
+            No jobs found
+          </h3>
+          <p class="text-gray-500 mb-6">
+            Try adjusting your search or browse all available jobs in India.
+          </p>
+          <div class="space-x-4">
+            <a
+              href="{{ url_for('jobs_bp.job_list') }}"
+              class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              >Browse All Jobs</a
+            >
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- Footer Performance Indicator -->
+<footer class="text-center text-gray-500 text-sm py-4 border-t border-gray-100">
+  ⚡ Page rendered in <strong>{{ "%.2f"|format(g.request_time|default(0.0)) }}</strong> seconds
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const spinner = document.getElementById("loadingSpinner");
+  const results = document.getElementById("jobResults");
+  
+  spinner.classList.remove("hidden");
+  results.style.display = "none";
+
+  // Simulate fast rendering after 400ms (instant feedback)
+  setTimeout(() => {
+    spinner.classList.add("hidden");
+    results.style.display = "block";
+  }, 400);
+  // Save Job
+document.querySelectorAll(".save-job-btn").forEach(btn => {
+  btn.addEventListener("click", async function() {
+    const jobId = this.dataset.jobId;
+    const response = await fetch(`/jobs/${jobId}/save`, { method: "POST" });
+    const result = await response.json();
+
+    Swal.fire({
+      icon: result.success ? "success" : "warning",
+      title: result.message,
+      timer: 1500,
+      showConfirmButton: false
+    }).then(() => {
+      // ✅ Refresh the page after the SweetAlert closes to update saved state
+      window.location.reload();
+    });
+  });
+});
+
+  // Apply Job
+  document.querySelectorAll(".apply-job-btn").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const jobId = this.dataset.jobId;
+      const applied = this.dataset.applied === "true";
+      if (applied) {
+        Swal.fire({
+          icon: "info",
+          title: "You already applied for this job.",
+          timer: 2000,
+          showConfirmButton: false
+        });
+        return;
+      }
+
+      Swal.fire({
+        title: "Apply for this Job",
+        html: `
+          <form id="applyForm" class="text-left">
+            <input type="text" name="name" placeholder="Full Name" class="swal2-input" required>
+            <input type="email" name="email" placeholder="Email" class="swal2-input" required>
+            <textarea name="cover_letter" placeholder="Cover Letter (optional)" class="swal2-textarea"></textarea>
+          </form>
+        `,
+        confirmButtonText: "Submit Application",
+        showCancelButton: true,
+        focusConfirm: false,
+        preConfirm: async () => {
+          const form = Swal.getPopup().querySelector("#applyForm");
+          const formData = new FormData(form);
+          const response = await fetch(`/jobs/${jobId}/apply`, {
+            method: "POST",
+            body: formData
+          });
+          const result = await response.json();
+          if (!result.success) throw new Error(result.message);
+          return result.message;
+        }
+      })
+      .then(result => {
+        if (result.isConfirmed) {
+          Swal.fire({
+            icon: "success",
+            title: result.value,
+            timer: 2000,
+            showConfirmButton: false
+          });
+        }
+      })
+      .catch(err => {
+        Swal.fire({
+          icon: "warning",
+          title: err.message,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      });
+    });
+  });
+});
+</script>
+
+<style>
+.fade-in {
+  animation: fadeIn 0.4s ease-in;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Apply for {{ job.title }} | JOBSEEKER{% endblock %}
+{% block content %}
+
+<section class="bg-gray-50 py-12">
+  <div class="max-w-3xl mx-auto bg-white shadow-lg rounded-2xl p-8">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">
+        Apply for <span class="text-blue-600">{{ job.title }}</span>
+      </h2>
+      <p class="text-gray-600">Fill in your details to submit your application.</p>
+    </div>
+
+    <!-- Application Form -->
+    <form id="applyForm"
+          method="POST"
+          enctype="multipart/form-data"
+          action="{{ url_for('jobs_bp.apply_job', job_id=job.id) }}"
+          class="space-y-6">
+
+      <div>
+        <label class="block text-gray-700 font-medium mb-2">Full Name <span class="text-red-500">*</span></label>
+        <input type="text" name="name" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500" placeholder="Enter your full name">
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-medium mb-2">Email <span class="text-red-500">*</span></label>
+        <input type="email" name="email" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500" placeholder="Enter your email address">
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-medium mb-2">Phone Number</label>
+        <input type="tel" name="phone" pattern="[0-9]{10}" maxlength="10" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500" placeholder="10-digit mobile number (optional)">
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-medium mb-2">Upload Resume (PDF, DOC, DOCX)</label>
+        <input type="file" name="resume" accept=".pdf,.doc,.docx" class="w-full border border-gray-300 rounded-lg p-3 bg-gray-50">
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-medium mb-2">Cover Letter (Optional)</label>
+        <textarea name="cover_letter" rows="4" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500" placeholder="Write a short message about why you're a great fit..."></textarea>
+      </div>
+
+      <div class="text-center">
+        <button type="submit"
+                class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-semibold text-lg shadow">
+          <i class="fas fa-paper-plane mr-2"></i> Submit Application
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("applyForm");
+  if (!form) return;
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+
+    Swal.fire({
+      title: "Submitting Application...",
+      text: "Please wait while we process your request.",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        body: formData,
+        credentials: "include"
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Application Submitted!",
+          text: result.message || "Your application has been received successfully.",
+          timer: 2000,
+          showConfirmButton: false
+        }).then(() => {
+          window.location.href = "/user/applications";
+        });
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: "Submission Failed",
+          text: result.message || "Something went wrong. Please try again.",
+          confirmButtonColor: "#2563eb"
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Server Error",
+        text: "Unable to connect to server. Please try again later.",
+        confirmButtonColor: "#2563eb"
+      });
+      console.error("Error submitting application:", err);
+    }
+  });
+});
+</script>
+
+{% endblock %}

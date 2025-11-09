@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}JOBSEEKER - Profile{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Your Profile</h1>
+            <p class="text-gray-600">Manage your account information and preferences</p>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Left Column - Profile Info -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Personal Information Card -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-user-circle text-blue-600 mr-2"></i>
+                        Personal Information
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                                <p class="text-gray-900 bg-gray-50 rounded-lg px-3 py-2">{{ user.first_name if user.first_name else 'Not set' }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                                <p class="text-gray-900 bg-gray-50 rounded-lg px-3 py-2">{{ user.last_name if user.last_name else 'Not set' }}</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                            <p class="text-gray-900 bg-gray-50 rounded-lg px-3 py-2">{{ user.username }}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                            <p class="text-gray-900 bg-gray-50 rounded-lg px-3 py-2">{{ user.email }}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Member Since</label>
+                            <p class="text-gray-900 bg-gray-50 rounded-lg px-3 py-2">
+                                {{ user.created_at.strftime('%B %d, %Y') if user.created_at else 'Recently' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Preferences Card -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-briefcase text-green-600 mr-2"></i>
+                        Job Preferences
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
+                                <p class="text-yellow-700 text-sm">Job preferences feature coming soon!</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Job Types</label>
+                                <div class="space-y-2">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                                        <span class="text-gray-700">Full-time</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                                        <span class="text-gray-700">Remote</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Locations</label>
+                                <div class="space-y-2">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-map-marker-alt text-red-500 mr-2 text-sm"></i>
+                                        <span class="text-gray-700">Remote</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-map-marker-alt text-red-500 mr-2 text-sm"></i>
+                                        <span class="text-gray-700">Any location</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Stats & Actions -->
+            <div class="space-y-6">
+                <!-- Profile Stats -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Profile Stats</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-bookmark text-blue-600 mr-2"></i>
+                                <span class="text-sm font-medium text-gray-700">Saved Jobs</span>
+                            </div>
+                            <span class="bg-blue-600 text-white px-2 py-1 rounded-full text-sm font-bold">
+                                {{ user.saved_jobs|length if user.saved_jobs else 0 }}
+                            </span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-paper-plane text-green-600 mr-2"></i>
+                                <span class="text-sm font-medium text-gray-700">Applications</span>
+                            </div>
+                            <span class="bg-green-600 text-white px-2 py-1 rounded-full text-sm font-bold">
+                                {{ user.applications|length if user.applications else 0 }}
+                            </span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-eye text-purple-600 mr-2"></i>
+                                <span class="text-sm font-medium text-gray-700">Profile Views</span>
+                            </div>
+                            <span class="bg-purple-600 text-white px-2 py-1 rounded-full text-sm font-bold">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                    
+                    <div class="space-y-3">
+                        <a href="/user/dashboard" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="fas fa-tachometer-alt text-blue-600 mr-3"></i>
+                            <span class="text-gray-700 font-medium">Dashboard</span>
+                        </a>
+                        
+                        <a href="/jobs/saved" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="fas fa-bookmark text-green-600 mr-3"></i>
+                            <span class="text-gray-700 font-medium">Saved Jobs</span>
+                        </a>
+                        
+                        <a href="/user/applications" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="fas fa-file-alt text-purple-600 mr-3"></i>
+                            <span class="text-gray-700 font-medium">My Applications</span>
+                        </a>
+                        
+                        <a href="/auth/logout" class="flex items-center p-3 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                            <i class="fas fa-sign-out-alt text-red-600 mr-3"></i>
+                            <span class="text-gray-700 font-medium">Logout</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Account Status -->
+                <div class="bg-white rounded-xl shadow-md border border-green-200 p-6">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                        <h3 class="text-lg font-semibold text-gray-900">Account Status</h3>
+                    </div>
+                    <p class="text-green-700 text-sm mb-3">Your account is active and in good standing</p>
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-green-800">Verified</span>
+                            <i class="fas fa-check text-green-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

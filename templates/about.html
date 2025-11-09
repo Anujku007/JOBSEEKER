@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}JOBSEEKER - About Us{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-16">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold text-gray-900 mb-8 text-center">About JOBSEEKER</h1>
+        
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            <div class="prose prose-lg max-w-none">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">Our Mission</h2>
+                <p class="text-gray-700 mb-6">
+                    JOBSEEKER was created to simplify the job search process. We aggregate job listings from multiple platforms 
+                    into one convenient location, saving you time and effort in your job search journey.
+                </p>
+                
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">What We Do</h2>
+                <ul class="list-disc list-inside text-gray-700 space-y-2 mb-6">
+                    <li>Aggregate job listings from various sources</li>
+                    <li>Provide advanced search and filtering options</li>
+                    <li>Offer a clean, user-friendly interface</li>
+                    <li>Help you find your dream job faster</li>
+                </ul>
+                
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">Technology</h2>
+                <p class="text-gray-700 mb-4">
+                    JOBSEEKER is built with modern web technologies:
+                </p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-blue-50 rounded-lg p-4 text-center">
+                        <i class="fab fa-python text-3xl text-blue-600 mb-2"></i>
+                        <p class="font-semibold">Python</p>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 text-center">
+                        <i class="fas fa-flask text-3xl text-green-600 mb-2"></i>
+                        <p class="font-semibold">Flask</p>
+                    </div>
+                    <div class="bg-yellow-50 rounded-lg p-4 text-center">
+                        <i class="fab fa-html5 text-3xl text-yellow-600 mb-2"></i>
+                        <p class="font-semibold">HTML5</p>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4 text-center">
+                        <i class="fab fa-css3-alt text-3xl text-purple-600 mb-2"></i>
+                        <p class="font-semibold">Tailwind CSS</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-6 mt-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Get Started</h3>
+                    <p class="text-gray-700 mb-4">
+                        Ready to find your next opportunity? Start searching for jobs today!
+                    </p>
+                    <a href="/jobs/" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 inline-block">
+                        Browse All Jobs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

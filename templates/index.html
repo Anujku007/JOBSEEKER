@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="bg-gradient-to-br from-blue-50 to-indigo-100 py-16">
+    <div class="container mx-auto px-4">
+        <div class="text-center max-w-4xl mx-auto">
+            <h1 class="text-5xl font-bold text-gray-900 mb-6">
+                Find Your <span class="text-blue-600">Dream Job</span> Faster
+            </h1>
+            <p class="text-xl text-gray-600 mb-12">
+                Search through thousands of jobs from all major platforms in one place.
+                Save time and find your perfect match.
+            </p>
+
+            <!-- Search Form -->
+            <form action="/jobs/" method="GET" class="bg-white rounded-2xl shadow-xl p-2 max-w-3xl mx-auto">
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="flex-1 flex items-center space-x-3 px-4 py-3">
+                        <i class="fas fa-search text-gray-400"></i>
+                        <input
+                            type="text"
+                            name="q"
+                            placeholder="Job title, keywords, or company"
+                            class="flex-1 border-0 focus:ring-0 text-lg w-full"
+                            value="{{ search_query or '' }}"
+                        >
+                    </div>
+                    <div class="flex-1 flex items-center space-x-3 px-4 py-3 border-t sm:border-t-0 sm:border-l border-gray-200">
+                        <i class="fas fa-map-marker-alt text-gray-400"></i>
+                        <input
+                            type="text"
+                            name="location"
+                            placeholder="Location"
+                            class="flex-1 border-0 focus:ring-0 text-lg w-full"
+                            value="{{ location or '' }}"
+                        >
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-8 py-4 rounded-xl hover:bg-blue-700 transition-colors font-semibold text-lg">
+                        Search Jobs
+                    </button>
+                </div>
+            </form>
+
+            <!-- Quick Filters -->
+            <div class="flex flex-wrap justify-center gap-3 mt-6">
+                <a href="/jobs/?q=python" class="bg-white text-gray-700 px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-shadow">
+                    <i class="fab fa-python text-blue-500 mr-2"></i>Python
+                </a>
+                <a href="/jobs/?q=remote" class="bg-white text-gray-700 px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-shadow">
+                    <i class="fas fa-laptop-house text-green-500 mr-2"></i>Remote
+                </a>
+                <a href="/jobs/?q=developer" class="bg-white text-gray-700 px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-shadow">
+                    <i class="fas fa-code text-purple-500 mr-2"></i>Developer
+                </a>
+                <a href="/jobs/?q=designer" class="bg-white text-gray-700 px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-shadow">
+                    <i class="fas fa-paint-brush text-pink-500 mr-2"></i>Designer
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Advanced Filters -->
+<section class="bg-white border-b border-gray-200 py-6">
+    <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <h3 class="text-lg font-semibold text-gray-900">Refine Your Search</h3>
+                <div class="flex flex-wrap gap-4">
+                    <select class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option>All Job Types</option>
+                        <option>Full-time</option>
+                        <option>Part-time</option>
+                        <option>Contract</option>
+                        <option>Internship</option>
+                    </select>
+                    <select class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option>All Locations</option>
+                        <option>Remote</option>
+                        <option>India</option>
+                        <option>Bangalore</option>
+                        <option>Delhi</option>
+                        <option>Mumbai</option>
+                    </select>
+                    <select class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option>All Salaries</option>
+                        <option>₹50k+</option>
+                        <option>₹80k+</option>
+                        <option>₹100k+</option>
+                        <option>₹120k+</option>
+                    </select>
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Job Listings -->
+<section class="container mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Results Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4 md:mb-0">
+                Available Jobs <span class="text-blue-600">({{ jobs|length }})</span>
+            </h2>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-600">Sort by:</span>
+                <select class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    <option>Newest First</option>
+                    <option>Relevance</option>
+                    <option>Salary: High to Low</option>
+                    <option>Salary: Low to High</option>
+                </select>
+            </div>
+        </div>
+
+        {% if jobs %}
+        <div class="grid gap-6 fade-in">
+            {% for job in jobs %}
+            <div class="job-card bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-blue-500">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between mb-3">
+                            <!-- In the job cards section, update the job title link -->
+                         <h3 class="text-xl font-semibold text-gray-900">
+                          <a href="/jobs/{{ job.id }}" class="hover:text-blue-600 transition-colors">{{ job.title }}</a>
+                         </h3>
+                           <button class="save-job-btn text-gray-400 hover:text-red-500 transition-colors" 
+                            title="Save Job"
+                               data-job-id="{{ job.id }}"
+                                data-saved="{{ 'true' if job.is_saved else 'false' }}">
+                              {% if job.is_saved %}
+                                <i class="fas fa-heart text-red-500"></i>
+                                    {% else %}
+                                 <i class="far fa-heart"></i>
+                              {% endif %}
+                              </button>
+                        </div>
+                        <div class="flex items-center text-gray-600 mb-3">
+                            <i class="fas fa-building text-gray-400 mr-2"></i>
+                            <span class="font-medium mr-4">{{ job.company }}</span>
+                            <i class="fas fa-map-marker-alt text-gray-400 mr-2"></i>
+                            <span>{{ job.location }}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <!-- CHANGED: job.type to job.job_type -->
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                                {{ job.job_type }}
+                            </span>
+                            {% if job.remote %}
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                                <i class="fas fa-wifi mr-1"></i>Remote
+                            </span>
+                            {% endif %}
+                            <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                                {{ job.source }}
+                            </span>
+                            {% if job.salary %}
+                            <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                                <i class="fas fa-dollar-sign mr-1"></i>{{ job.salary }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <p class="text-gray-700 line-clamp-2 mb-4">{{ job.description }}</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>Posted {{ job.posted_date }}</span>
+                            <span class="mx-2">•</span>
+                            <i class="fas fa-eye mr-2"></i>
+                            <span>123 views</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 lg:mt-0 lg:ml-6 lg:text-right">
+                        <div class="space-y-3">
+                            {% if job.salary %}
+                            <div class="text-lg font-semibold text-gray-900">{{ job.salary }}</div>
+                            {% endif %}
+                            <div class="flex lg:flex-col gap-2">
+                                <a href="/jobs/{{ job.id }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold flex-1 lg:flex-none text-center">
+                                    View Details
+                                </a>
+                               <!-- Find the Quick Apply button and replace with: -->
+<button class="apply-job-btn bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors" 
+        title="Quick Apply"
+        data-job-id="{{ job.id }}"
+        data-applied="{{ 'true' if job.is_applied else 'false' }}">
+    {% if job.is_applied %}
+        <i class="fas fa-check"></i>
+    {% else %}
+        <i class="fas fa-paper-plane"></i>
+    {% endif %}
+</button>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                <i class="fas fa-bolt mr-1"></i>Apply in one click
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex justify-center items-center space-x-2 mt-12">
+            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold">1</button>
+            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600">2</button>
+            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600">3</button>
+            <span class="px-2 text-gray-500">...</span>
+            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600">10</button>
+            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        {% else %}
+        <!-- No Results State -->
+        <div class="text-center py-16 fade-in">
+            <div class="max-w-md mx-auto">
+                <i class="fas fa-search text-gray-300 text-6xl mb-6"></i>
+                <h3 class="text-2xl font-semibold text-gray-600 mb-4">No jobs found</h3>
+                <p class="text-gray-500 mb-6">Try adjusting your search criteria or browse all available jobs.</p>
+                <div class="space-x-4">
+                    <a href="/jobs/" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                        Browse All Jobs
+                    </a>
+                    <button class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="bg-gray-50 py-16 border-t border-gray-200">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-bold text-gray-900 mb-12">Why Choose JOBSEEKER?</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-briefcase text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">1M+ Jobs</h3>
+                    <p class="text-gray-600">From top companies worldwide</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-bolt text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Fast Search</h3>
+                    <p class="text-gray-600">Find your dream job in seconds</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Smart Matching</h3>
+                    <p class="text-gray-600">AI-powered job recommendations</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

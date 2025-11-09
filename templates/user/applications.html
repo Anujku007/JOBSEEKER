@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}JOBSEEKER - My Applications{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-10">
+    <!-- Header -->
+    <div class="mb-8 text-center">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">My Applications</h1>
+        <p class="text-gray-600">Track, review, and manage all your job applications in one place.</p>
+    </div>
+
+    {% if applications %}
+    <!-- Applications Count -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-paper-plane text-blue-600 text-xl"></i>
+            <div>
+                <h3 class="font-semibold text-blue-900">
+                    You’ve submitted {{ applications|length }} job application{% if applications|length != 1 %}s{% endif %}
+                </h3>
+                <p class="text-blue-600 text-sm">Monitor progress and stay organized</p>
+            </div>
+        </div>
+        <a href="/jobs/" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm transition">
+            <i class="fas fa-search mr-2"></i> Find More Jobs
+        </a>
+    </div>
+
+    <!-- Applications List -->
+    <div class="space-y-6">
+        {% for application in applications %}
+        <div class="bg-white rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div class="p-6">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row justify-between mb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">{{ application.job_title or "Untitled" }}</h2>
+                        <p class="text-gray-700 font-medium">{{ application.job_company or "Unknown Company" }}</p>
+                        <div class="flex flex-wrap text-gray-600 text-sm mt-1 space-x-3">
+                            <span><i class="fas fa-map-marker-alt mr-1"></i>{{ application.job_location or "India" }}</span>
+                            <span><i class="fas fa-briefcase mr-1"></i>{{ application.job_type or "Full-time" }}</span>
+                        </div>
+                    </div>
+                    <div class="text-right mt-3 md:mt-0">
+                        <span class="px-3 py-1 text-xs rounded-full font-medium
+                            {% if application.status == 'Applied' %}bg-blue-100 text-blue-800
+                            {% elif application.status == 'Interview' %}bg-yellow-100 text-yellow-800
+                            {% elif application.status == 'Rejected' %}bg-red-100 text-red-800
+                            {% elif application.status == 'Accepted' %}bg-green-100 text-green-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ application.status or "Pending" }}
+                        </span>
+                        <p class="text-gray-500 text-xs mt-1">
+                            Applied on {{ application.applied_at.strftime('%b %d, %Y') if application.applied_at else "N/A" }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Job Info -->
+                <div class="grid md:grid-cols-3 gap-4 text-sm mb-4">
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-money-bill-wave text-green-500 mr-2"></i>
+                        {{ application.job_salary or 'Salary not specified' }}
+                    </div>
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-calendar text-blue-500 mr-2"></i>
+                        Posted on {{ application.job_posted_date or 'Recently' }}
+                    </div>
+                    {% if application.phone %}
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-phone text-purple-500 mr-2"></i>
+                        {{ application.phone }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Job Description -->
+                <p class="text-gray-700 text-sm mb-4 line-clamp-3">
+                    {{ application.job_description or "No job description available." }}
+                </p>
+
+                <!-- Footer Actions -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-4 border-t border-gray-200 space-y-3 md:space-y-0">
+                    <div class="flex space-x-2">
+                        {% if application.job_remote %}
+                        <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">
+                            <i class="fas fa-home mr-1"></i> Remote
+                        </span>
+                        {% endif %}
+                        <span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
+                            {{ application.job_source or "Unknown" }}
+                        </span>
+                    </div>
+
+                    <div class="flex space-x-2">
+                        <a href="/jobs/{{ application.job_id }}" 
+                           class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                            <i class="fas fa-eye mr-1"></i> View Job
+                        </a>
+
+                        {% if application.resume_file %}
+                        <a href="{{ url_for('jobs_bp.download_resume', filename=application.resume_file) }}" target="_blank"
+                           class="bg-green-100 text-green-700 hover:bg-green-200 px-4 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-file-download mr-1"></i> View Resume
+                        </a>
+                        {% endif %}
+
+                        {% if application.notes %}
+                        <button onclick="showNotes('{{ application.notes|tojson|safe }}')"
+                                class="bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-sticky-note mr-1"></i> View Cover Letter
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-20">
+        <i class="fas fa-file-alt text-gray-300 text-6xl mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">No Applications Yet</h3>
+        <p class="text-gray-500 mb-6">Start applying to jobs to see your progress here.</p>
+        <a href="/jobs/" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium transition">
+            <i class="fas fa-search mr-2"></i> Browse Jobs
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- SweetAlert for Notes -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function showNotes(notes) {
+    Swal.fire({
+        title: "Cover Letter",
+        html: `<div class='text-left text-gray-800 leading-relaxed whitespace-pre-line'>${notes}</div>`,
+        icon: "info",
+        confirmButtonText: "Close",
+        confirmButtonColor: "#2563eb"
+    });
+}
+</script>
+{% endblock %}

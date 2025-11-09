@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}JOBSEEKER - Find Your Dream Job{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- SweetAlert2 (for popups like Save/Apply) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        html {
+            text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .job-card:hover {
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        /* Dropdown animation */
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            margin-top: 0.5rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 50;
+        }
+        .user-dropdown.show {
+            display: block;
+            animation: fadeIn 0.2s ease-in;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="bg-gray-50" data-user-authenticated="{% if current_user.is_authenticated %}true{% else %}false{% endif %}">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-briefcase text-blue-600 text-2xl"></i>
+                    <span class="text-2xl font-bold text-gray-900">JOBSEEKER</span>
+                </div>
+
+                <div class="hidden md:flex space-x-6">
+                    <a href="/" class="text-gray-600 hover:text-blue-600 font-medium">Home</a>
+                    <a href="/jobs/" class="text-gray-600 hover:text-blue-600 font-medium">Jobs</a>
+                    <a href="/about" class="text-gray-600 hover:text-blue-600 font-medium">About</a>
+                    <a href="/jobs/saved" class="text-gray-600 hover:text-blue-600 font-medium">Saved Jobs</a>
+                    {% if current_user.is_authenticated %}
+                    <a href="/user/applications" class="text-gray-600 hover:text-blue-600 font-medium">
+                        My Applications
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    {% if current_user.is_authenticated %}
+                    <div class="relative">
+                        <button id="userMenuBtn" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 font-medium" aria-label="User menu">
+                            <i class="fas fa-user-circle text-xl"></i>
+                            <span>{{ current_user.first_name or current_user.username }}</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="userDropdown" class="user-dropdown">
+                            <a href="/user/dashboard" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                            </a>
+                            <a href="/user/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user-circle mr-2"></i>Profile
+                            </a>
+                            <a href="/jobs/saved" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-bookmark mr-2"></i>Saved Jobs
+                            </a>
+                            <div class="border-t border-gray-200 my-1"></div>
+                            <a href="/auth/logout" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <a href="/auth/login" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Sign In
+                    </a>
+                    {% endif %}
+                    <button class="md:hidden text-gray-600" aria-label="Mobile menu">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fas fa-briefcase text-blue-400 text-xl"></i>
+                        <span class="text-xl font-bold">JOBSEEKER</span>
+                    </div>
+                    <p class="text-gray-400">One search, every job opportunity</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="/jobs/" class="hover:text-white">Browse Jobs</a></li>
+                        <li><a href="/about" class="hover:text-white">About Us</a></li>
+                        <li><a href="#" class="hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Job Seekers</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="/auth/register" class="hover:text-white">Create Account</a></li>
+                        <li><a href="#" class="hover:text-white">Job Alerts</a></li>
+                        <li><a href="#" class="hover:text-white">Career Advice</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Connect</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white" aria-label="Twitter">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white" aria-label="Facebook">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
+                <p>&copy; 2025 JOBSEEKER. Built with Flask & Python.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Base JavaScript -->
+    <script>
+        // User dropdown toggle
+        document.addEventListener('click', function(e) {
+            const btn = document.getElementById('userMenuBtn');
+            const menu = document.getElementById('userDropdown');
+            if (btn && menu) {
+                if (btn.contains(e.target)) {
+                    menu.classList.toggle('show');
+                } else if (!menu.contains(e.target)) {
+                    menu.classList.remove('show');
+                }
+            }
+        });
+
+        // Mobile Menu Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.querySelector('button[aria-label="Mobile menu"]');
+            const navLinks = document.querySelector('.hidden.md\\:flex');
+            if (mobileMenuButton && navLinks) {
+                mobileMenuButton.addEventListener('click', function() {
+                    navLinks.classList.toggle('hidden');
+                    navLinks.classList.toggle('absolute');
+                    navLinks.classList.toggle('top-16');
+                    navLinks.classList.toggle('left-0');
+                    navLinks.classList.toggle('right-0');
+                    navLinks.classList.toggle('bg-white');
+                    navLinks.classList.toggle('p-4');
+                    navLinks.classList.toggle('shadow-lg');
+                });
+            }
+        });
+    </script>
+
+    <!-- Job actions file -->
+    <script src="{{ url_for('static', filename='js/job_actions.js') }}"></script>
+
+    {% block extra_js %}{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ url_for('static', filename='js/job_actions.js') }}"></script>
+
+</body>
+</html>

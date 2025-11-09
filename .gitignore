@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+instance/
+*.pyc
+*.pyo
+*.db
+.env
+.env.*
+/Lib/
+/Include/
+/Scripts/
+/uploads/resumes/
+

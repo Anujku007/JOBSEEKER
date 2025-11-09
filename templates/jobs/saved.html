@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}JOBSEEKER - Saved Jobs{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8 text-center">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">💼 Saved Jobs</h1>
+        <p class="text-gray-600">Your collection of bookmarked job opportunities in India 🇮🇳</p>
+    </div>
+
+    {% if saved_jobs %}
+    <!-- Saved Jobs Count -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas fa-bookmark text-blue-600 text-xl mr-3"></i>
+                <div>
+                    <h3 class="font-semibold text-blue-800">
+                        You have {{ saved_jobs|length }} saved job{% if saved_jobs|length != 1 %}s{% endif %}
+                    </h3>
+                    <p class="text-blue-600 text-sm">Easily apply or manage your saved opportunities</p>
+                </div>
+            </div>
+            <a href="{{ url_for('jobs_bp.job_list') }}" 
+               class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-medium text-sm">
+                <i class="fas fa-search mr-2"></i> Browse More Jobs
+            </a>
+        </div>
+    </div>
+
+    <!-- Saved Jobs List -->
+    <div class="grid gap-6 fade-in">
+        {% for saved_job in saved_jobs %}
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all duration-300">
+            <div class="p-6 flex flex-col md:flex-row justify-between">
+                <div class="flex-1">
+                    <!-- Job Info -->
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">{{ saved_job.job_title }}</h3>
+                    <p class="text-gray-700 font-medium mb-1">{{ saved_job.job_company }}</p>
+                    <div class="flex flex-wrap items-center text-gray-600 text-sm mb-2">
+                        <i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>
+                        <span class="mr-4">{{ saved_job.job_location }}</span>
+                        {% if saved_job.job_type %}
+                        <i class="fas fa-briefcase mr-1 text-gray-400"></i>
+                        <span>{{ saved_job.job_type }}</span>
+                        {% endif %}
+                    </div>
+                    {% if saved_job.job_salary %}
+                    <div class="flex items-center text-sm text-gray-600 mb-3">
+                        <i class="fas fa-money-bill-wave mr-2 text-green-500"></i>
+                        <span>{{ saved_job.job_salary }}</span>
+                    </div>
+                    {% endif %}
+                    <p class="text-gray-700 text-sm line-clamp-3 mb-4">{{ saved_job.job_description }}</p>
+
+                    <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-3">
+                        {% if saved_job.job_remote %}
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                            <i class="fas fa-home mr-1"></i> Remote
+                        </span>
+                        {% endif %}
+                        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                            {{ saved_job.job_source or "RapidAPI" }}
+                        </span>
+                        <span class="ml-auto">
+                            Saved on {{ saved_job.saved_at.strftime('%b %d, %Y') }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col justify-between md:ml-6 mt-4 md:mt-0 text-center">
+                    <a href="/jobs/{{ saved_job.job_id }}" 
+                       class="bg-blue-600 text-white hover:bg-blue-700 px-5 py-2 rounded-lg font-medium mb-2">
+                       <i class="fas fa-eye mr-1"></i> View Details
+                    </a>
+                    <button class="apply-job-btn bg-green-600 text-white hover:bg-green-700 px-5 py-2 rounded-lg font-medium mb-2"
+                            data-job-id="{{ saved_job.job_id }}" data-applied="false">
+                        <i class="fas fa-paper-plane mr-1"></i> Apply Now
+                    </button>
+                    <button class="unsave-job-btn bg-red-100 text-red-700 hover:bg-red-200 px-5 py-2 rounded-lg font-medium text-sm transition-colors"
+                            data-job-id="{{ saved_job.job_id }}">
+                        <i class="fas fa-trash mr-1"></i> Remove
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-20 fade-in">
+        <i class="fas fa-bookmark text-gray-300 text-6xl mb-4"></i>
+        <h3 class="text-2xl font-semibold text-gray-700 mb-2">No saved jobs yet</h3>
+        <p class="text-gray-500 mb-6">Start exploring and save your favorite jobs to apply later.</p>
+        <a href="{{ url_for('jobs_bp.job_list') }}" 
+           class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+            <i class="fas fa-search mr-2"></i> Browse Jobs
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Unsave Job
+    document.querySelectorAll('.unsave-job-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            const jobId = this.dataset.jobId;
+            const jobCard = this.closest('.bg-white');
+            const confirmDelete = await Swal.fire({
+                title: 'Remove Job?',
+                text: 'Are you sure you want to remove this job from your saved list?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove it',
+                cancelButtonText: 'Cancel'
+            });
+            if (!confirmDelete.isConfirmed) return;
+
+            const response = await fetch(`/jobs/${jobId}/unsave`, { method: 'POST' });
+            const result = await response.json();
+            if (result.success) {
+                Swal.fire({ icon: 'success', title: result.message, timer: 1500, showConfirmButton: false });
+                jobCard.style.opacity = '0';
+                jobCard.style.transform = 'translateX(100px)';
+                setTimeout(() => jobCard.remove(), 300);
+            } else {
+                Swal.fire({ icon: 'error', title: result.message, timer: 2000, showConfirmButton: false });
+            }
+        });
+    });
+
+    // Apply Job
+    document.querySelectorAll('.apply-job-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const jobId = this.dataset.jobId;
+            const applied = this.dataset.applied === "true";
+            if (applied) {
+                Swal.fire({ icon: "info", title: "Already applied for this job", timer: 1500, showConfirmButton: false });
+                return;
+            }
+
+            Swal.fire({
+                title: "Apply for this Job",
+                html: `
+                  <form id="applyForm" class="text-left">
+                    <input type="text" name="name" placeholder="Full Name" class="swal2-input" required>
+                    <input type="email" name="email" placeholder="Email" class="swal2-input" required>
+                    <textarea name="cover_letter" placeholder="Cover Letter (optional)" class="swal2-textarea"></textarea>
+                  </form>
+                `,
+                confirmButtonText: "Submit Application",
+                showCancelButton: true,
+                focusConfirm: false,
+                preConfirm: async () => {
+                    const form = Swal.getPopup().querySelector("#applyForm");
+                    const formData = new FormData(form);
+                    const response = await fetch(`/jobs/${jobId}/apply`, { method: "POST", body: formData });
+                    const result = await response.json();
+                    if (!result.success) throw new Error(result.message);
+                    return result.message;
+                }
+            }).then(result => {
+                if (result.isConfirmed) {
+                    Swal.fire({ icon: "success", title: result.value, timer: 1500, showConfirmButton: false });
+                }
+            }).catch(err => {
+                Swal.fire({ icon: "error", title: err.message, timer: 2000, showConfirmButton: false });
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
