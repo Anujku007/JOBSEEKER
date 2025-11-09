@@ -81,48 +81,57 @@ def create_app():
         return render_template("about.html")
 
     # -------------------------------------------------------
-    # Health Check Route (optional)
+    # Health Check Route
     # -------------------------------------------------------
     @app.route("/ping")
     def ping():
         """Quick health check endpoint."""
         return {"status": "ok", "message": "JobSeeker backend running", "time": time.ctime()}
 
+    # -------------------------------------------------------
+    # ✅ Auto-create database tables (fixes Render issue)
+    # -------------------------------------------------------
+    with app.app_context():
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+
+        if not tables:
+            print("📦 No tables found — initializing database...")
+            db.create_all()
+            print("✅ Tables created successfully.")
+        else:
+            print(f"📊 Existing tables found: {tables}")
+
     return app
 
 
 # -------------------------------------------------------
-# ✅ Make app globally available for Gunicorn / Render
+# ✅ Global app for Gunicorn / Render
 # -------------------------------------------------------
 app = create_app()
 
+
 # -------------------------------------------------------
-# Main Entry Point (for local development)
+# Main Entry Point (for local dev)
 # -------------------------------------------------------
 if __name__ == "__main__":
     with app.app_context():
-        try:
-            db.create_all()
-            from sqlalchemy import inspect
+        from sqlalchemy import inspect
 
-            print(f"📁 Using database: {app.config['SQLALCHEMY_DATABASE_URI']}")
-            inspector = inspect(db.engine)
-            tables = inspector.get_table_names()
-            print("📊 Database tables:", tables)
+        print(f"📁 Using database: {app.config['SQLALCHEMY_DATABASE_URI']}")
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        print("📊 Database tables:", tables)
 
-            if "user" in tables:
-                columns = inspector.get_columns("user")
-                print("📋 User table columns:")
-                for column in columns:
-                    print(f"   - {column['name']} ({column['type']})")
-            else:
-                print("⚠️ User table not found!")
-        except Exception as e:
-            print(f"⚠️ Error initializing database: {e}")
+        if "user" in tables:
+            columns = inspector.get_columns("user")
+            print("📋 User table columns:")
+            for column in columns:
+                print(f"   - {column['name']} ({column['type']})")
+        else:
+            print("⚠️ User table not found!")
 
-    # -------------------------------------------------------
-    # Startup Logs
-    # -------------------------------------------------------
     print("\n" + "=" * 60)
     print("🚀 JOBSEEKER Flask Application Starting...")
     print(f"🔑 Mantiks API Connected: {bool(os.getenv('MANTIKS_API_KEY'))}")
