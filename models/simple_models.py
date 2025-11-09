@@ -3,41 +3,51 @@ from flask_login import UserMixin
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
+# =======================================================
+# USER MODEL
+# =======================================================
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     first_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
-    password_hash = db.Column(db.String(128))
+    password_hash = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Relationships
     saved_jobs = db.relationship('SavedJob', backref='user', lazy=True, cascade='all, delete-orphan')
     applications = db.relationship('Application', backref='user', lazy=True, cascade='all, delete-orphan')
-    
+
+    # -------------------------------------------------------
+    # Password Helpers
+    # -------------------------------------------------------
     def set_password(self, password):
+        """Hash and store password."""
         self.password_hash = generate_password_hash(password)
         print(f"🔐 Password set for {self.email}")
-    
+
     def check_password(self, password):
+        """Check hashed password."""
         if not self.password_hash:
-            print("❌ No password hash set for user")
+            print(f"❌ No password hash set for {self.email}")
             return False
         result = check_password_hash(self.password_hash, password)
-        print(f"🔐 Password check for {self.email}: {result}")
+        print(f"🔍 Password check for {self.email}: {result}")
         return result
 
     def __repr__(self):
-        return f'<User {self.email}>'
+        return f"<User {self.email}>"
 
 
+# =======================================================
+# SAVED JOB MODEL
+# =======================================================
 class SavedJob(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    job_id = db.Column(db.String(100), nullable=False)  # String ID from API
-
-    # Store job details directly (denormalized)
+    job_id = db.Column(db.String(100), nullable=False)
     job_title = db.Column(db.String(200), nullable=False)
     job_company = db.Column(db.String(100), nullable=False)
     job_location = db.Column(db.String(100), nullable=False)
@@ -48,22 +58,22 @@ class SavedJob(db.Model):
     job_posted_date = db.Column(db.String(50))
     job_remote = db.Column(db.Boolean, default=False)
     job_source = db.Column(db.String(100))
-    
     saved_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Ensure a user can't save the same job multiple times
+    # Prevent duplicate saves
     __table_args__ = (db.UniqueConstraint('user_id', 'job_id', name='unique_user_job'),)
 
     def __repr__(self):
-        return f'<SavedJob {self.job_id} for user {self.user_id}>'
+        return f"<SavedJob {self.job_id} for user {self.user_id}>"
 
 
+# =======================================================
+# APPLICATION MODEL
+# =======================================================
 class Application(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    job_id = db.Column(db.String(100), nullable=False)  # String ID from API
-
-    # Store job details directly (denormalized)
+    job_id = db.Column(db.String(100), nullable=False)
     job_title = db.Column(db.String(200), nullable=False)
     job_company = db.Column(db.String(100), nullable=False)
     job_location = db.Column(db.String(100), nullable=False)
@@ -74,15 +84,12 @@ class Application(db.Model):
     job_posted_date = db.Column(db.String(50))
     job_remote = db.Column(db.Boolean, default=False)
     job_source = db.Column(db.String(100))
-
     applied_at = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(50), default='Applied')
     notes = db.Column(db.Text)
-
-    # NEW: resume file path (relative to your static/uploads or uploads/resumes folder)
     resume_file = db.Column(db.String(255), nullable=True)
 
-    # Ensure a user can't apply to the same job multiple times
+    # Prevent duplicate applications
     __table_args__ = (db.UniqueConstraint('user_id', 'job_id', name='unique_user_job_application'),)
 
     def to_dict(self):
@@ -105,9 +112,9 @@ class Application(db.Model):
                 'url': self.job_url,
                 'posted_date': self.job_posted_date,
                 'remote': self.job_remote,
-                'source': self.job_source
-            }
+                'source': self.job_source,
+            },
         }
 
     def __repr__(self):
-        return f'<Application {self.job_id} by user {self.user_id}>'
+        return f"<Application {self.job_id} by user {self.user_id}>"
